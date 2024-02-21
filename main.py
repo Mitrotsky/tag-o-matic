@@ -3,7 +3,7 @@ import json
 import os
 
 gallery_directory = Path(r"C:\Users\mitro\Downloads\Mitya")  # You have to put it manually
-data_file = Path(r"C:\Users\mitro\PycharmProjects\tag-o-matic\.data\data.json")  # Same here
+data_file = Path(r".data\data.json")  # Same here
 
 
 class TagsHandler:
@@ -26,12 +26,6 @@ class TagsHandler:
             json.dump(self.dicti, file, indent=2, ensure_ascii=False)
 
 
-def check_if_path_broken() -> None:
-    assert os.path.isdir(gallery_directory)
-    assert os.path.exists(gallery_directory)
-    print('Files:', [filename for filename in os.listdir(gallery_directory)])
-
-
 def create_dict(filename: str, index: int, picture_name: str, iterable: list | set, boolean: bool) -> dict:
     to_do = {
         filename: {
@@ -44,8 +38,8 @@ def create_dict(filename: str, index: int, picture_name: str, iterable: list | s
     return to_do
 
 
-def main():
-    def help_me():
+def main() -> None:
+    def help_me() -> None:
         print('-' * 128)
         print('СПИСОК КОМАНД:')
         print('help - показать данный список команд.')
@@ -60,7 +54,7 @@ def main():
     with TagsHandler(data_file) as fm:
         index_list = [fm[filename]["index"] for filename in os.listdir(gallery_directory)]
         max_index = max(index_list)
-        for i, filename in enumerate(os.listdir(gallery_directory)):
+        for filename in os.listdir(gallery_directory):
             if filename not in fm:
                 fm.update(create_dict(str(filename), max_index + 1, 'NAME', ['TAGS', 'TAGS', 'TAGS'], False))
                 max_index += 1
