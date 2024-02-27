@@ -47,6 +47,7 @@ def main() -> None:
         print('open <индекс> - открыть файл в галерее с выбранным индексом.')
         print('edit <индекс> - редактировать запись с выбранным индексом.')
         print('find <*теги> - выводит на экран записи с соответствующими тегами (через пробел).')
+        print('nsfw <true|false> - переключает отображение небезопасного для работы контента.')
         print('exit - закрыть программу.')
         print('-' * 128)
         print()
@@ -58,6 +59,8 @@ def main() -> None:
             if filename not in fm:
                 fm.update(create_dict(str(filename), max_index + 1, 'NAME', ['TAGS', 'TAGS', 'TAGS'], False))
                 max_index += 1
+
+    show_nsfw = False
 
     print('Tag-o-matic, by Mitya "Mitrotsky"')
     help_me()
@@ -73,10 +76,18 @@ def main() -> None:
                         print()
 
             case "show", *_:
-                for filename in os.listdir(gallery_directory):
-                    print(f"[{fm[filename]['index']:^4}] {fm[filename]['name']:<30}| "
-                          f"{filename:<40}| {fm[filename]['tags']}")
-                print()
+                if show_nsfw:
+                    for filename in os.listdir(gallery_directory):
+                        print(f"[{fm[filename]['index']:^4}] {fm[filename]['name']:<30}| "
+                              f"{filename:<40}| {fm[filename]['tags']}")
+                    print()
+
+                else:
+                    for filename in os.listdir(gallery_directory):
+                        if not fm[filename]['nsfw']:
+                            print(f"[{fm[filename]['index']:^4}] {fm[filename]['name']:<30}| "
+                                  f"{filename:<40}| {fm[filename]['tags']}")
+                    print()
 
             case "edit", index, *_:
                 with TagsHandler(data_file) as fm:
@@ -90,11 +101,30 @@ def main() -> None:
                             print(f'Редактирование {filename} завершено. Успешно сохранено.\n')
 
             case "find", *tags:
-                for filename in os.listdir(gallery_directory):
-                    if set(tags).issubset(set([tag.lower() for tag in fm[filename]['tags']])):
-                        print(f"[{fm[filename]['index']:^4}] {fm[filename]['name']:<30}| "
-                              f"{filename:<40}| {fm[filename]['tags']}")
-                print()
+                if show_nsfw:
+                    for filename in os.listdir(gallery_directory):
+                        if set(tags).issubset(set([tag.lower() for tag in fm[filename]['tags']])):
+                            print(f"[{fm[filename]['index']:^4}] {fm[filename]['name']:<30}| "
+                                  f"{filename:<40}| {fm[filename]['tags']}")
+                    print()
+
+                else:
+                    for filename in os.listdir(gallery_directory):
+                        if not fm[filename][nsfw]:
+                            if set(tags).issubset(set([tag.lower() for tag in fm[filename]['tags']])):
+                                print(f"[{fm[filename]['index']:^4}] {fm[filename]['name']:<30}| "
+                                      f"{filename:<40}| {fm[filename]['tags']}")
+                    print()
+
+            case "nsfw", real, *_:
+                if real.lower() == 'true':
+                    show_nsfw = True
+                    print("Отображение NSFW-контента включено.\n")
+                elif real.lower() == 'false':
+                    show_nsfw = False
+                    print("Отображение NSFW-контента отключено.\n")
+                else:
+                    print("Неверный аргумент.\n")
 
             case "help", *_:
                 help_me()
